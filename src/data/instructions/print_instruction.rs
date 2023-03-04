@@ -1,9 +1,11 @@
+use std::fmt::{Debug, Formatter};
 use mexprp::num::{ComplexFloat, ComplexRugRat};
 use rug::{Complex, Rational};
 use crate::data::data_type::DataType;
 use crate::data::expression::Expression;
 use crate::data::instructions::Instruction;
 
+#[derive(Debug)]
 pub struct PrintInstruction {
     expression: Expression
 }
@@ -29,7 +31,7 @@ impl Instruction for PrintInstruction {
         println!("{}", result)
     }
 
-    fn add_argument(&self, name: String, expression: Expression) {
+    fn add_argument(&mut self, name: String, expression: Expression) {
         todo!()
     }
 }

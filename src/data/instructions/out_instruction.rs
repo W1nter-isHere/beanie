@@ -1,6 +1,7 @@
 use crate::data::expression::Expression;
 use crate::data::instructions::Instruction;
 
+#[derive(Debug)]
 pub struct OutInstruction {
     expression: Expression
 }
@@ -18,7 +19,7 @@ impl Instruction for OutInstruction {
         todo!()
     }
 
-    fn add_argument(&self, name: String, expression: Expression) {
+    fn add_argument(&mut self, name: String, expression: Expression) {
         todo!()
     }
 }

@@ -8,6 +8,7 @@ mod logger;
 mod keywords;
 
 use std::{env, fs};
+use crate::data::data_type::DataType;
 use crate::interpreters::{beanie_parser};
 
 fn main() {
@@ -29,5 +30,5 @@ fn main() {
     };
     
     // beanie_interpreter::interpret(file_content);
-    beanie_parser::parse(file_content);
+       beanie_parser::parse(file_content, DataType::ComplexStruct);
 }
