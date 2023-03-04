@@ -1,14 +1,7 @@
-use crate::data::data_type::DataType;
+use mexprp::{Answer, Num};
+use crate::interpreters::mexprp_math_interpreter;
 
-pub fn evaluate(expression: &String) -> DataType {
-    // 5 + 26 *(4-2)
-    
-    let mut current_token: String;
-    
-    
-    return DataType::Int(0);
-}
-
-fn is_recognized(text: String) -> bool {
-    
+// this exist is in case I want to implement my own math interpreter in the future for whatever reason
+pub fn evaluate<N: Num + 'static>(expression: &String) -> Answer<N> {
+    mexprp_math_interpreter::evaluate::<N>(expression)
 }

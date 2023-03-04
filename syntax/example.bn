@@ -4,8 +4,9 @@ in k
 
 a = 1/4 as frac
 b = 2.33 as decimal
+x1, x2 = quadratic_formula(2, 3, 6)
 
-f(x) = x*a^2
+f(x) = x* a ^ 2
 
 print f(b)
 graph f
@@ -13,4 +14,4 @@ graph f
     min-x -10
     max-x 10
 
-out f(h * j * k)
+out f(h * j * k) as frac

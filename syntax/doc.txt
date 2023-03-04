@@ -1,7 +1,7 @@
 KEYWORDS
     as - denote a type or converts value of 1 type to another
 
-TYPES
+FILTER_TYPES
     natnum - Natural Number, positive whole numbers
     int - Integers, whole numbers
     ratnum - Rational Number, whole numbers and fractions
@@ -9,16 +9,11 @@ TYPES
     realnum - Real numbers, any numbers
 
 DATA_TYPES
-    natnum - Natural numbers, stored as a unsigned integer
-        type - natnum
-    int - Integers, stored as a 32bit integer
-        type = int
-    frac - Fractions, stored as fraction expressions
-        type = ratnum
-    decimal - Numbers that may have decimals, stored as float or double
-        type = ratnum
-    irratnum - Irrational numbers, stored as expressions
-        type = irratnum
+    decimal - Internally using Complex struct, any decimals
+    idecimal - Internally using ComplexFloat struct, any f64 with imaginary number
+    frac - Internally using Rational struct, a fraction with integer numerator and denominator
+    ifrac - Internally using ComplexRugRat struct, any rational (fraction) with imaginary fraction
+    irrational - Internally using String (?), stored as an expression
 
 INSTRUCTIONS
     in - input as argument when executing the .calc file
