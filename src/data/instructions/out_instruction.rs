@@ -5,31 +5,31 @@ use std::path::{Path, PathBuf};
 use std::sync::atomic::Ordering;
 use colored::Colorize;
 use crate::data::beanie_context::BeanieContext;
-use crate::data::data_type::DataType;
-use crate::data::expression::Expression;
+use crate::data::expression::BeanieExpression;
 use crate::data::instructions;
 use crate::data::instructions::Instruction;
 use crate::keywords::booleans::TRUE;
 use crate::CLEANED_OUTPUT;
+use crate::data::expression_type::ExpressionType;
 
 const OUT_TO_FILE: &str = "output-to-file";
 const OUT_FILE: &str = "output-file";
 
 lazy_static! {
-    static ref OUT_ARGUMENTS: HashMap<String, DataType> = hashmap!{
-        String::from(OUT_TO_FILE) => DataType::Boolean,
-        String::from(OUT_FILE) => DataType::FilePath,
+    static ref OUT_ARGUMENTS: HashMap<String, ExpressionType> = hashmap!{
+        String::from(OUT_TO_FILE) => ExpressionType::Boolean,
+        String::from(OUT_FILE) => ExpressionType::FilePath,
     };
 }
 
 #[derive(Debug, Clone)]
 pub struct OutInstruction {
-    expression: Expression,
-    arguments: HashMap<String, Expression>
+    expression: BeanieExpression,
+    arguments: HashMap<String, BeanieExpression>
 }
 
 impl OutInstruction {
-    pub fn new(expression: Expression) -> OutInstruction {
+    pub fn new(expression: BeanieExpression) -> OutInstruction {
         OutInstruction {
             expression,
             arguments: HashMap::new(),
@@ -77,7 +77,7 @@ impl Instruction for OutInstruction {
         }
     }
 
-    fn add_argument(&mut self, name: String, expression: Expression) {
+    fn add_argument(&mut self, name: String, expression: BeanieExpression) {
         instructions::verify_argument("Out", &name, &expression, &OUT_ARGUMENTS, &mut self.arguments);
     }
 }

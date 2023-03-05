@@ -3,7 +3,7 @@ use pest::iterators::{Pair, Pairs};
 use pest::Parser;
 use crate::data::beanie_context::BeanieContext;
 use crate::data::data_type::DataType;
-use crate::data::expression::Expression;
+use crate::data::expression::BeanieExpression;
 use crate::data::function::Function;
 use crate::data::instructions::graph_instruction::GraphInstruction;
 use crate::data::instructions::in_instruction::InInstruction;
@@ -12,13 +12,13 @@ use crate::data::instructions::out_instruction::OutInstruction;
 use crate::data::instructions::print_instruction::PrintInstruction;
 use crate::data::instructions::use_instruction::UseInstruction;
 use crate::{keywords, logger};
+use crate::interpreters::expression_parser;
 
 #[derive(Parser)]
-#[grammar = "syntax/grammar/beanie_v0.6.pest"]
+#[grammar = "syntax/grammar/beanie_v0.7.pest"]
 struct BeanieParser;
 
 pub fn parse(bn_file_path: String, bn_file: String) -> BeanieContext {
-    let default_data_type = crate::DEFAULT_DATA_TYPE.clone();
     let mut constants = HashMap::new();
     let mut functions = HashMap::new();
     let mut instructions = Vec::new();
@@ -28,9 +28,10 @@ pub fn parse(bn_file_path: String, bn_file: String) -> BeanieContext {
     match BeanieParser::parse(Rule::file, bn_file.as_str()) {
         Ok(file) => {
             let f = file.clone().next().unwrap();
-
+            
             // for each line in the file
             for line in f.into_inner().filter(|l: &Pair<Rule>| !l.as_str().is_empty()) {
+
                 // turn it into the component that makes up the line
                 for statement in line.into_inner() {
                     let mut statement_components = statement.clone().into_inner();
@@ -39,7 +40,7 @@ pub fn parse(bn_file_path: String, bn_file: String) -> BeanieContext {
                     match statement.as_rule() {
                         Rule::operation => {
                             let instruction = statement_components.next().unwrap().as_str().trim();
-                            let expression = get_expression(&mut statement_components, &default_data_type);
+                            let expression = get_expression(&mut statement_components);
 
                             let instruction_obj: Box<dyn Instruction> = match instruction {
                                 keywords::instructions::PRINT => Box::new(PrintInstruction::new(expression)),
@@ -70,10 +71,10 @@ pub fn parse(bn_file_path: String, bn_file: String) -> BeanieContext {
                                     let argument_name = statement_components.next().unwrap().as_str().trim();
                                     let argument_expression = match statement_components.peek() {
                                         Some(argument_type) => match argument_type.as_rule() {
-                                            Rule::file_path => Expression::new(statement_components.next().unwrap().as_str().to_string(), DataType::FilePath),
-                                            Rule::boolean => Expression::new(statement_components.next().unwrap().as_str().to_string(), DataType::Boolean),
-                                            Rule::data_type => Expression::new(statement_components.next().unwrap().as_str().to_string(), DataType::DataType),
-                                            Rule::expression => get_expression(&mut statement_components, &default_data_type),
+                                            Rule::file_path => BeanieExpression::FilePath(statement_components.next().unwrap().as_str().to_string()),
+                                            Rule::boolean => BeanieExpression::Boolean(statement_components.next().unwrap().as_str().parse::<bool>().unwrap()),
+                                            Rule::data_type => BeanieExpression::DataType(statement_components.next().unwrap().as_str().parse::<DataType>().unwrap()),
+                                            Rule::expression => get_expression(&mut statement_components),
                                             _ => unreachable!(),
                                         }
                                         None => unreachable!(),
@@ -99,7 +100,7 @@ pub fn parse(bn_file_path: String, bn_file: String) -> BeanieContext {
                             }
 
                             statement_components.next(); // skip the = sign
-                            let expression = get_expression(&mut statement_components, &default_data_type);
+                            let expression = get_expression(&mut statement_components);
 
                             functions.insert(Function::new(function_name.to_string(), parameters), expression);
                         }
@@ -111,7 +112,7 @@ pub fn parse(bn_file_path: String, bn_file: String) -> BeanieContext {
                                 constant_names.push(statement_components.next().unwrap().as_str().trim().to_string());
                             }
 
-                            constants.insert(constant_names, get_expression(&mut statement_components, &default_data_type));
+                            constants.insert(constant_names, get_expression(&mut statement_components));
                         }
                         _ => unreachable!()
                     }
@@ -119,16 +120,10 @@ pub fn parse(bn_file_path: String, bn_file: String) -> BeanieContext {
             }
         }
         Err(error) => { 
-            logger::log_error(format!("{}", error).as_str());
+            logger::log_error(format!("\n{}", error).as_str());
             unreachable!()
         }
     };
-
-    println!("Constants: {:?}", constants);
-    println!("Functions: {:?}", functions);
-    println!("Instructions: {:?}", instructions);
-    println!("Inputs: {:?}", inputs);
-    println!("Outputs: {:?}", outputs);
 
     BeanieContext {
         beanie_file_path: bn_file_path,
@@ -140,23 +135,6 @@ pub fn parse(bn_file_path: String, bn_file: String) -> BeanieContext {
     }
 }
 
-fn get_expression(statement_components: &mut Pairs<Rule>, default_data_type: &DataType) -> Expression {
-    let mut expression_components = statement_components.next().unwrap().into_inner();
-    let math_expression = expression_components.next().unwrap();
-    let datatype = get_as_datatype(&mut expression_components, &default_data_type);
-    Expression::new(math_expression, datatype)
-}
-
-fn get_as_datatype(expression: &mut Pairs<Rule>, default_data_type: &DataType) -> DataType {
-    match expression.next() {
-        Some(assumed_as_keyword) => {
-            if assumed_as_keyword.as_rule() == Rule::as_keyword {
-                expression.next().unwrap().as_str().trim().parse::<DataType>().unwrap()
-            } else {
-                logger::log_error("Math expression not followed by as keyword");
-                unreachable!()
-            }
-        }
-        None => default_data_type.clone(),
-    }
+fn get_expression(statement_components: &mut Pairs<Rule>) -> BeanieExpression {
+    expression_parser::parse(statement_components.next().unwrap().as_str().to_string())
 }

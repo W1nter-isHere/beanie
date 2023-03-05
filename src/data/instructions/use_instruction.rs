@@ -1,5 +1,5 @@
 use crate::data::beanie_context::BeanieContext;
-use crate::data::expression::Expression;
+use crate::data::expression::BeanieExpression;
 use crate::data::instructions::Instruction;
 use crate::logger;
 
@@ -20,7 +20,7 @@ impl Instruction for UseInstruction {
     fn execute(&self, context: &mut BeanieContext, parameters: &Vec<String>) {
     }
 
-    fn add_argument(&mut self, name: String, expression: Expression) {
+    fn add_argument(&mut self, name: String, expression: BeanieExpression) {
         logger::log_error("User instruction does not have any arguments")
     }
 }

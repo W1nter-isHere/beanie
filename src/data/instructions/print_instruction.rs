@@ -1,15 +1,15 @@
 use std::fmt::Debug;
 use crate::data::beanie_context::BeanieContext;
-use crate::data::expression::Expression;
+use crate::data::expression::BeanieExpression;
 use crate::data::instructions::Instruction;
 
 #[derive(Debug, Clone)]
 pub struct PrintInstruction {
-    expression: Expression
+    expression: BeanieExpression
 }
 
 impl PrintInstruction {
-    pub fn new(expression: Expression) -> PrintInstruction {
+    pub fn new(expression: BeanieExpression) -> PrintInstruction {
         PrintInstruction {
             expression
         }
@@ -21,7 +21,7 @@ impl Instruction for PrintInstruction {
         println!("{}", self.expression.evaluate_to_string(context));
     }
 
-    fn add_argument(&mut self, name: String, expression: Expression) {
+    fn add_argument(&mut self, name: String, expression: BeanieExpression) {
         todo!()
     }
 }

@@ -1,9 +1,10 @@
 use pest::iterators::Pair;
 use crate::data::beanie_context::BeanieContext;
-use crate::data::expression::Expression;
+use crate::data::expression::BeanieExpression;
 use crate::data::instructions::Instruction;
 use crate::{data, logger, main};
 use crate::data::instructions;
+use crate::interpreters::expression_parser;
 
 #[derive(Debug, Clone)]
 pub struct InInstruction {
@@ -21,9 +22,14 @@ impl InInstruction {
 impl Instruction for InInstruction {
     fn execute(&self, context: &mut BeanieContext, parameters: &Vec<String>) {
         if let Some(index) = context.inputs.iter().position(|val| val == &self.input_name) {
+            if index >= parameters.len() {
+                logger::log_error("There are more required inputs than the number of inputs given");
+                unreachable!()
+            }
+            
             context.constants.insert(
                 vec![self.input_name.clone()],
-                Expression::new(parameters[index].clone(), crate::DEFAULT_DATA_TYPE.clone()),
+                expression_parser::parse(parameters[index].to_string())
             );
         } else { 
             logger::log_error(format!("Failed to find input {} within the file context", &self.input_name).as_str());
@@ -31,7 +37,7 @@ impl Instruction for InInstruction {
         }
     }
 
-    fn add_argument(&mut self, _: String, _: Expression) {
+    fn add_argument(&mut self, _: String, _: BeanieExpression) {
         instructions::no_argument("In");
     }
 }

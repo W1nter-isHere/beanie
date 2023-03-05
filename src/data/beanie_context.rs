@@ -1,15 +1,16 @@
 use std::collections::HashMap;
-use crate::data::expression::Expression;
+use crate::data::expression::BeanieExpression;
 use crate::data::function::Function;
 use crate::data::instructions::Instruction;
 
+#[derive(Debug)]
 pub struct BeanieContext {
     pub beanie_file_path: String,
-    pub constants: HashMap<Vec<String>, Expression>,
-    pub functions: HashMap<Function, Expression>,
+    pub constants: HashMap<Vec<String>, BeanieExpression>,
+    pub functions: HashMap<Function, BeanieExpression>,
     pub instructions: Vec<Box<dyn Instruction>>,
     pub inputs: Vec<String>,
-    pub outputs: Vec<Expression>,
+    pub outputs: Vec<BeanieExpression>,
 }
 
 impl BeanieContext {

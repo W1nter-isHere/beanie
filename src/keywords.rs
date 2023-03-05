@@ -3,6 +3,7 @@ pub const AS: &str = "as";
 pub mod types {
     pub const DECIMAL: &str = "decimal";
     pub const IMAGINARY_DECIMAL: &str = "idecimal";
+    pub const COMPLEX: &str = "complex";
     pub const FRACTION: &str = "frac";
     pub const IMAGINARY_FRACTION: &str = "ifrac";
     pub const IRRATIONAL: &str = "irrational";

@@ -2,7 +2,8 @@ use std::collections::HashMap;
 use std::fmt::Debug;
 use crate::data::beanie_context::BeanieContext;
 use crate::data::data_type::DataType;
-use crate::data::expression::Expression;
+use crate::data::expression::BeanieExpression;
+use crate::data::expression_type::ExpressionType;
 use crate::logger;
 
 pub mod print_instruction;
@@ -13,14 +14,14 @@ pub mod out_instruction;
 
 pub trait Instruction: Debug {
     fn execute(&self, context: &mut BeanieContext, parameters: &Vec<String>);
-    fn add_argument(&mut self, name: String, expression: Expression);
+    fn add_argument(&mut self, name: String, expression: BeanieExpression);
 }
 
 pub fn no_argument(instruction_name: &str) {
     logger::log_error(format!("There are no valid arguments to the instruction {}", instruction_name).as_str());
 }
 
-pub fn verify_argument(instruction_name: &str, name: &String, expression: &Expression, valid_arguments: &HashMap<String, DataType>, arguments: &mut HashMap<String, Expression>) {
+pub fn verify_argument(instruction_name: &str, name: &String, expression: &BeanieExpression, valid_arguments: &HashMap<String, ExpressionType>, arguments: &mut HashMap<String, BeanieExpression>) {
     if valid_arguments.contains_key(name) {
         let expected_type = &valid_arguments[name];
         let got_type = &expression.get_type();

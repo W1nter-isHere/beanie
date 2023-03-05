@@ -4,15 +4,12 @@ use crate::keywords;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum DataType {
-    ComplexStruct,
-    ComplexFloat,
+    Decimal,
+    ImaginaryDecimal,
+    Complex,
     Rational,
     ComplexRational,
     Irrational,
-    
-    FilePath,
-    Boolean,
-    DataType,
 }
 
 impl Display for DataType {
@@ -26,8 +23,9 @@ impl FromStr for DataType {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            keywords::types::DECIMAL => Ok(DataType::ComplexStruct),
-            keywords::types::IMAGINARY_DECIMAL => Ok(DataType::ComplexFloat),
+            keywords::types::DECIMAL => Ok(DataType::Decimal),
+            keywords::types::IMAGINARY_DECIMAL => Ok(DataType::ImaginaryDecimal),
+            keywords::types::COMPLEX => Ok(DataType::Complex),
             keywords::types::FRACTION => Ok(DataType::Rational),
             keywords::types::IMAGINARY_FRACTION => Ok(DataType::ComplexRational),
             keywords::types::IRRATIONAL => Ok(DataType::Irrational),
