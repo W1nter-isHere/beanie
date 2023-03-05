@@ -1,0 +1,70 @@
+/// INSTRUCTIONS
+instruction = @{ ("print" | "graph" | "out") ~ WHITE_SPACE }
+as_keyword = { "as" }
+variable_name = { !instruction ~ !as_keyword ~ !data_type ~ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_" | "-" )* }
+//                x1
+//                a
+//                first_x1
+
+/// TYPES
+data_type = { "decimal" | "idecimal" | "frac" | "ifrac" | "irrational" }
+file_path = { ASCII_ALPHANUMERIC ~ (!"." ~ !"*" ~ !"\"" ~ !"<" ~ !">" ~ !"|" ~ ASCII)* ~ "." ~ ASCII_ALPHANUMERIC+ }
+boolean = { "true" | "false" }
+
+/// INFERRED TYPES
+positive_whole_numbers = { ASCII_DIGIT+ }
+negative_whole_numbers = { subtraction ~ positive_whole_numbers }
+
+fraction = @{ positive_whole_numbers ~ "/" ~ positive_whole_numbers }
+//           2/31
+decimal = @{ positive_whole_numbers ~ "." ~ positive_whole_numbers }
+//           2.31
+numeric_expression = { decimal | fraction | negative_whole_numbers | positive_whole_numbers }
+
+/// OPERATORS
+multiplication = { "*" }
+division = { "/" }
+power = { "^" }
+modulo = { "%" }
+addition = { "+" }
+subtraction = { "-" }
+open_parentheses = { "(" }
+close_parentheses = { ")" }
+operators = _{ open_parentheses | close_parentheses | power | modulo | multiplication | division | addition | subtraction }
+
+assignment_operator = { "=" }
+comma = { "," }
+
+/// EXPRESSIONS
+simple_math = _{ (numeric_expression ~ variable_name?) | variable_name }
+//                5                    x
+//                                                       x
+//                57
+math_expression = !{ simple_math ~ (operators ~ simple_math)* }
+//                   5x             *           2
+//                   x              /           10
+//                   57             -           20
+function_call_expression = !{ variable_name ~ open_parentheses ~ math_expression ~ (comma ~ math_expression)* ~ close_parentheses }
+//                            f               (                  5x * 2                                       )
+//                            f               (                  5x * 2              , 5                      )
+expression = ${ (function_call_expression | math_expression) ~ (WHITE_SPACE? ~ as_keyword ~ WHITE_SPACE ~ data_type)? }
+//              5x * 2 as decimal
+//              x / 10 as frac
+//              57 - 20 as decimal
+
+/// STATEMENTS
+operation_argument = ${ variable_name ~ WHITE_SPACE ~ (boolean | file_path | data_type | expression) }
+operation = { instruction ~ expression }
+in_operation = ${ "in" ~ WHITE_SPACE ~ variable_name }
+use_operation = ${ "use" ~ WHITE_SPACE ~ file_path }
+
+constant = { variable_name ~ (comma ~ variable_name)* ~ assignment_operator ~ expression }
+function_declaration = { variable_name ~ open_parentheses ~ variable_name ~ (comma ~ variable_name)* ~ close_parentheses ~ assignment_operator ~ expression }
+line_comment = _{ "//" ~ ANY* } 
+
+line = { line_comment | in_operation | use_operation | operation | operation_argument | function_declaration | constant }
+file = { SOI ~ (line ~ NEWLINE*)* ~ EOI }
+
+/// SPECIAL
+WHITESPACE = _{ " " }
+COMMENT = _{ "/*" ~ (!"*/" ~ ANY)* ~ "*/" }

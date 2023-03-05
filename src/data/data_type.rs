@@ -2,13 +2,17 @@ use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 use crate::keywords;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum DataType {
     ComplexStruct,
     ComplexFloat,
     Rational,
     ComplexRational,
     Irrational,
+    
+    FilePath,
+    Boolean,
+    DataType,
 }
 
 impl Display for DataType {

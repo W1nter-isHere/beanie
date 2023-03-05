@@ -1,4 +1,4 @@
-#[derive(Hash, Eq, PartialEq, Debug)]
+#[derive(Hash, Eq, PartialEq, Debug, Clone)]
 pub struct Function {
     name: String,
     parameters: Vec<String>,

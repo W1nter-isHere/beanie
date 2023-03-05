@@ -15,3 +15,8 @@ pub mod instructions {
     pub const IN: &str = "in";
     pub const OUT: &str = "out";
 }
+
+pub mod booleans {
+    pub const TRUE: &str = "true";
+    pub const FALSE: &str = "false";
+}

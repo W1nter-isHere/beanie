@@ -24,6 +24,8 @@ name = "beanie"
 version = "0.1.0"
 dependencies = [
  "colored",
+ "lazy_static",
+ "maplit",
  "mexprp",
  "pest",
  "pest_derive",
@@ -125,6 +127,12 @@ name = "libc"
 version = "0.2.139"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "201de327520df007757c1f0adce6e827fe8562fbc28bfd9c15571c66ca1f5f79"
+
+[[package]]
+name = "maplit"
+version = "1.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3e2e65a1a2e43cfcb47a895c4c8b10d1f4a61097f9f254f183aee60cad9c651d"
 
 [[package]]
 name = "mexprp"

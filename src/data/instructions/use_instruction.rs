@@ -1,19 +1,17 @@
-use mexprp::num::{ComplexFloat, ComplexRugRat};
-use rug::{Complex, Rational};
 use crate::data::beanie_context::BeanieContext;
-use crate::data::data_type::DataType;
 use crate::data::expression::Expression;
 use crate::data::instructions::Instruction;
+use crate::logger;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct UseInstruction {
-    expression: Expression
+    file_path: String
 }
 
 impl UseInstruction {
-    pub fn new(expression: Expression) -> UseInstruction {
+    pub fn new(file_path: String) -> UseInstruction {
         UseInstruction {
-            expression
+            file_path
         }
     }
 }
@@ -23,6 +21,6 @@ impl Instruction for UseInstruction {
     }
 
     fn add_argument(&mut self, name: String, expression: Expression) {
-        Instruction::no_argument("Use");
+        logger::log_error("User instruction does not have any arguments")
     }
 }

@@ -1,14 +1,14 @@
 use crate::data::beanie_context::BeanieContext;
-use crate::data::data_type::DataType;
 use crate::interpreters::beanie_parser;
 
-pub fn run(bn_file: String, parameters: &Vec<String>) {
-    let mut context = beanie_parser::parse(bn_file);
-    interpret(&mut context, &parameters);
+pub fn run(bn_file_path: String, bn_file: String, parameters: &Vec<String>) {
+    interpret(beanie_parser::parse(bn_file_path, bn_file), &parameters);
 }
 
-fn interpret(context: &mut BeanieContext, parameters: &Vec<String>) {
+fn interpret(context: BeanieContext, parameters: &Vec<String>) {
+    let mut stripped_context = BeanieContext::strip(&context);
+    
     for instruction in context.instructions {
-        instruction.execute(context, parameters);
+        instruction.execute(&mut stripped_context, parameters);
     }
 }

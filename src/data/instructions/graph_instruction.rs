@@ -3,7 +3,7 @@ use crate::data::beanie_context::BeanieContext;
 use crate::data::expression::Expression;
 use crate::data::instructions::Instruction;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct GraphInstruction {
     expression: Expression,
     arguments: HashMap<String, Expression>

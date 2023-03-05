@@ -1,0 +1,28 @@
+instruction = @{ ("print" | "graph" | "out") ~ WHITE_SPACE }
+as_keyword = { "as" }
+data_type = { "decimal" | "idecimal" | "frac" | "ifrac" | "irrational" }
+variable_name = { !instruction ~ !as_keyword ~ !data_type ~ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_" | "-" )* }
+
+multiplication = { "*" }
+division = { "/" }
+power = { "^" }
+modulo = { "%" }
+addition = { "+" }
+subtraction = { "-" }
+open_parentheses = { "(" }
+close_parentheses = { ")" }
+operators = _{ open_parentheses | close_parentheses | power | modulo | multiplication | division | addition | subtraction }
+comma = { "," }
+
+positive_whole_numbers = { ASCII_DIGIT+ }
+negative_whole_numbers = { subtraction ~ positive_whole_numbers }
+
+fraction = @{ positive_whole_numbers ~ "/" ~ positive_whole_numbers }
+decimal = @{ positive_whole_numbers ~ "." ~ positive_whole_numbers }
+numeric_expression = { decimal | fraction | negative_whole_numbers | positive_whole_numbers }
+
+simple_math = _{ (numeric_expression ~ variable_name?) | variable_name }
+math_expression = !{ simple_math ~ (operators ~ simple_math)* }
+function_call_expression = !{ variable_name ~ open_parentheses ~ math_expression ~ (comma ~ math_expression)* ~ close_parentheses }
+
+expression = ${ (function_call_expression | math_expression) ~ (WHITE_SPACE? ~ as_keyword ~ WHITE_SPACE ~ data_type)? }
