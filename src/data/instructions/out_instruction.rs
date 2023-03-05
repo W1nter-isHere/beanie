@@ -1,3 +1,4 @@
+use crate::data::beanie_context::BeanieContext;
 use crate::data::expression::Expression;
 use crate::data::instructions::Instruction;
 
@@ -15,7 +16,7 @@ impl OutInstruction {
 }
 
 impl Instruction for OutInstruction {
-    fn execute(&self) {
+    fn execute(&self, context: &mut BeanieContext, parameters: &Vec<String>) {
         todo!()
     }
 

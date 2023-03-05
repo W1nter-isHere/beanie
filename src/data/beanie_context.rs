@@ -7,4 +7,10 @@ pub struct BeanieContext {
     pub constants: HashMap<Vec<String>, Expression>,
     pub functions: HashMap<Function, Expression>,
     pub instructions: Vec<Box<dyn Instruction>>,
+    pub inputs: Vec<String>,
+    pub output: Vec<Expression>,
+}
+
+impl BeanieContext {
+    
 }

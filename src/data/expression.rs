@@ -28,6 +28,6 @@ impl Expression {
 
 impl Display for Expression {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} as {}", self.expression, self.value_type.to_string())
+        write!(f, "{}", self.expression)
     }
 }

@@ -1,5 +1,7 @@
+use crate::data::beanie_context::BeanieContext;
 use crate::data::expression::Expression;
 use crate::data::instructions::Instruction;
+use crate::logger;
 
 #[derive(Debug)]
 pub struct InInstruction {
@@ -15,11 +17,11 @@ impl InInstruction {
 }
 
 impl Instruction for InInstruction {
-    fn execute(&self) {
-        todo!()
+    fn execute(&self, context: &mut BeanieContext, parameters: &Vec<String>)  {
+        context.
     }
 
-    fn add_argument(&mut self, name: String, expression: Expression) {
-        todo!()
+    fn add_argument(&mut self, _: String, _: Expression) {
+        Instruction::no_argument("In");
     }
 }

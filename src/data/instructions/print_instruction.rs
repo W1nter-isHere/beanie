@@ -1,6 +1,7 @@
 use std::fmt::{Debug, Formatter};
 use mexprp::num::{ComplexFloat, ComplexRugRat};
 use rug::{Complex, Rational};
+use crate::data::beanie_context::BeanieContext;
 use crate::data::data_type::DataType;
 use crate::data::expression::Expression;
 use crate::data::instructions::Instruction;
@@ -19,7 +20,7 @@ impl PrintInstruction {
 }
 
 impl Instruction for PrintInstruction {
-    fn execute(&self) {
+    fn execute(&self, _: &mut BeanieContext, parameters: &Vec<String>) {
         let result = match self.expression.get_type() {
             DataType::ComplexStruct => self.expression.evaluate::<Complex>().to_string(),
             DataType::ComplexFloat => self.expression.evaluate::<ComplexFloat>().to_string(),

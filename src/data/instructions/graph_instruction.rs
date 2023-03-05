@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use crate::data::beanie_context::BeanieContext;
 use crate::data::expression::Expression;
 use crate::data::instructions::Instruction;
 
@@ -18,8 +19,8 @@ impl GraphInstruction {
 }
 
 impl Instruction for GraphInstruction {
-    fn execute(&self) {
-        todo!()
+    fn execute(&self, context: &mut BeanieContext, parameters: &Vec<String>) {
+        
     }
 
     fn add_argument(&mut self, name: String, expression: Expression) {

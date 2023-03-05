@@ -1,5 +1,6 @@
 use mexprp::num::{ComplexFloat, ComplexRugRat};
 use rug::{Complex, Rational};
+use crate::data::beanie_context::BeanieContext;
 use crate::data::data_type::DataType;
 use crate::data::expression::Expression;
 use crate::data::instructions::Instruction;
@@ -18,11 +19,10 @@ impl UseInstruction {
 }
 
 impl Instruction for UseInstruction {
-    fn execute(&self) {
-        todo!()
+    fn execute(&self, context: &mut BeanieContext, parameters: &Vec<String>) {
     }
 
     fn add_argument(&mut self, name: String, expression: Expression) {
-        todo!()
+        Instruction::no_argument("Use");
     }
 }

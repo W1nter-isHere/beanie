@@ -12,16 +12,19 @@ use crate::data::instructions::Instruction;
 use crate::data::instructions::out_instruction::OutInstruction;
 use crate::data::instructions::print_instruction::PrintInstruction;
 use crate::data::instructions::use_instruction::UseInstruction;
-use crate::keywords;
+use crate::{keywords, logger};
 
 #[derive(Parser)]
 #[grammar = "syntax/beanie_v0.1.pest"]
 struct BeanieParser;
 
-pub fn parse(bn_file: String, default_data_type: DataType) -> BeanieContext {
+pub fn parse(bn_file: String) -> BeanieContext {
+    let default_data_type = crate::DEFAULT_DATA_TYPE.clone();
     let mut constants = HashMap::new();
     let mut functions = HashMap::new();
     let mut instructions = Vec::new();
+    let mut inputs = Vec::new();
+    let mut output = Vec::new();
     
     match BeanieParser::parse(Rule::file, bn_file.as_str()) {
         Ok(file) => {
@@ -40,13 +43,19 @@ pub fn parse(bn_file: String, default_data_type: DataType) -> BeanieContext {
                             let expression = get_expression(&mut statement_components, &default_data_type);
                             
                             let instruction_obj: Box<dyn Instruction> = match instruction {
-                                keywords::instructions::PRINT => Box::new(PrintInstruction::new(expression.clone())),
-                                keywords::instructions::GRAPH => Box::new(GraphInstruction::new(expression.clone())),
-                                keywords::instructions::USE => Box::new(UseInstruction::new(expression.clone())),
-                                keywords::instructions::IN => Box::new(InInstruction::new(expression.clone())),
-                                keywords::instructions::OUT => Box::new(OutInstruction::new(expression.clone())),
+                                keywords::instructions::PRINT => Box::new(PrintInstruction::new(expression)),
+                                keywords::instructions::GRAPH => Box::new(GraphInstruction::new(expression)),
+                                keywords::instructions::USE => Box::new(UseInstruction::new(expression)),
+                                keywords::instructions::IN => {
+                                    inputs.push(expression.to_string());
+                                    Box::new(InInstruction::new(expression)) 
+                                },
+                                keywords::instructions::OUT => {
+                                    output.push(expression.clone());
+                                    Box::new(OutInstruction::new(expression))
+                                },
                                 _ => {
-                                    panic!("{}", format!("Instruction {} is not valid", instruction).red());
+                                    logger::log_error(format!("Instruction {} is not valid", instruction).as_str());
                                 }
                             };
                             
@@ -60,7 +69,7 @@ pub fn parse(bn_file: String, default_data_type: DataType) -> BeanieContext {
                                     last_instruction.add_argument(argument_name.to_string(), argument_expression)
                                 }
                                 None => {
-                                    panic!("{}", "Instruction argument not following any instruction!".red());
+                                    logger::log_error("Instruction argument not following any instruction!");
                                 }
                             }
                         },
@@ -83,7 +92,15 @@ pub fn parse(bn_file: String, default_data_type: DataType) -> BeanieContext {
                             functions.insert(Function::new(function_name.to_string(), parameters), expression);
                         },
                         Rule::constant => {
+                            let mut constant_names: Vec<String> = Vec::new();
+                            constant_names.push(statement_components.next().unwrap().as_str().to_string());
+
+                            // todo does this work?
+                            while statement_components.next().filter(|token| token.as_rule() == Rule::assignment_operator).is_none() {
+                                constant_names.push(statement_components.next().unwrap().as_str().to_string());
+                            }
                             
+                            constants.insert(constant_names, get_expression(&mut statement_components, &default_data_type));
                         },
                        _ => unreachable!(),
                     }
@@ -91,7 +108,7 @@ pub fn parse(bn_file: String, default_data_type: DataType) -> BeanieContext {
             }
         }
         Err(error) => {
-            println!("{}", error);
+            println!(error);
         }
     };
     
@@ -103,6 +120,8 @@ pub fn parse(bn_file: String, default_data_type: DataType) -> BeanieContext {
         constants,
         functions,
         instructions,
+        inputs,
+        output,
     }
 }
 
@@ -120,7 +139,7 @@ fn get_as_datatype(expression: &mut Pairs<Rule>, default_data_type: &DataType) -
             if assumed_as_keyword.as_rule() == Rule::as_keyword {
                 expression.next().unwrap().as_str().parse::<DataType>().unwrap()
             } else {
-                panic!("{}", "Math expression not followed by as keyword".red());
+                logger::log_error("Math expression not followed by as keyword")
             }
         }
         None => default_data_type.clone(),
