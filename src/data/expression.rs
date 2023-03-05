@@ -1,4 +1,4 @@
-use mexprp::{Answer, Num};
+use mexprp::{Answer, Context, Expression, MathError, Num, Term};
 use mexprp::num::{ComplexFloat, ComplexRugRat};
 use pest::iterators::Pair;
 use rug::{Complex, Rational};
@@ -6,7 +6,6 @@ use crate::data::beanie_context::BeanieContext;
 use crate::data::data_type::DataType;
 use crate::data::expression_type::ExpressionType;
 use crate::interpreters::expression_parser::Rule;
-use crate::interpreters::math_interpreter;
 
 #[derive(Clone, Debug)]
 pub enum BeanieExpression {
@@ -17,15 +16,43 @@ pub enum BeanieExpression {
 }
 
 impl BeanieExpression {
-    pub fn evaluate<N: Num + 'static>(&self, context: &BeanieContext) -> Answer<N> {
-        match self{
-            BeanieExpression::Math(_, _) => {
-                
-            },
-            _ => unreachable!()
-        };
+    fn construct_math_context<N: Num + Clone + 'static>(&self, expr: &Pair<Rule>, bn_context: &BeanieContext) -> Context<N> {
+        let mut math_context: Context<N> = Context::new();
+        let mut components = expr.clone().into_inner();
         
-        math_interpreter::evaluate::<N>(&String::from(""))
+        for component in components {
+            if component.as_rule() == Rule::variable_name {
+                let name = component.as_str().to_string();
+                
+                if bn_context.has_constant(&name) {
+                    let constant_expression = bn_context.get_constant(&name).unwrap();
+                    let result = constant_expression.0.evaluate::<N>(bn_context);
+                    let value = match result {
+                        Answer::Single(answer) => answer,
+                        Answer::Multiple(answers) => answers[constant_expression.1].clone(),
+                    };
+                    math_context.set_var(&name, value);
+                } else if bn_context.has_function(&name) {
+                    math_context.set_func(&name, bn_context.get_function(&name).unwrap());
+                }
+            } 
+        }
+        
+        math_context
+    }
+
+    pub fn evaluate<N: Num + 'static>(&self, bn_context: &BeanieContext) -> Answer<N> {
+        match self {
+            BeanieExpression::Math(expr, _) => Expression::parse_ctx(expr.as_str().trim(), self.construct_math_context::<N>(expr, bn_context)).unwrap().eval().unwrap(),
+            _ => unreachable!()
+        }
+    }
+
+    pub fn evaluate_with_math_ctx<N: Num + 'static>(&self, math_context: Context<N>) -> Answer<N> {
+        match self {
+            BeanieExpression::Math(expr, _) => Expression::parse_ctx(expr.as_str().trim(), math_context).unwrap().eval().unwrap(),
+            _ => unreachable!()
+        }
     }
     
     pub fn evaluate_to_string(&self, context: &BeanieContext) -> String {

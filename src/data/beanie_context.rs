@@ -7,7 +7,7 @@ use crate::data::instructions::Instruction;
 pub struct BeanieContext {
     pub beanie_file_path: String,
     pub constants: HashMap<Vec<String>, BeanieExpression>,
-    pub functions: HashMap<Function, BeanieExpression>,
+    pub functions: Vec<Function>,
     pub instructions: Vec<Box<dyn Instruction>>,
     pub inputs: Vec<String>,
     pub outputs: Vec<BeanieExpression>,
@@ -23,5 +23,39 @@ impl BeanieContext {
             outputs: original.outputs.clone(),
             instructions: vec![],
         }
+    }
+
+    pub fn has_constant(&self, name: &str) -> bool {
+        for key in self.constants.keys() {
+            if key.iter().any(|s| s == name) {
+                return true;
+            }
+        }
+        false
+    }
+
+    pub fn has_function(&self, name: &str) -> bool {
+        self.functions.iter().any(|f| f.name == name)
+    }
+    
+    pub fn get_constant(&self, name: &str) -> Option<(BeanieExpression, usize)> {
+        for key in self.constants.keys() {
+            let mut iterator = key.iter();
+            if iterator.any(|s| s == name) {
+                return Some((self.constants[key].clone(), iterator.position(|s| s == name).unwrap()));
+            }
+        }
+        
+        None
+    }
+
+    pub fn get_function(&self, name: &str) -> Option<Function> {
+        for func in &self.functions {
+            if func.name == name {
+                return Some(func.clone());
+            }
+        }
+
+        None
     }
 }

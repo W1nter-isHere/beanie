@@ -14,7 +14,7 @@ use crate::data::data_type::DataType;
 use crate::interpreters::{beanie_interpreter};
 
 lazy_static! {
-    pub static ref DEFAULT_DATA_TYPE: DataType = DataType::ComplexStruct;
+    pub static ref DEFAULT_DATA_TYPE: DataType = DataType::Decimal;
     pub static ref CLEANED_OUTPUT: AtomicBool = AtomicBool::new(false);
 }
 

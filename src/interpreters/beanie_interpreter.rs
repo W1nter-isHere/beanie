@@ -11,6 +11,4 @@ fn interpret(context: BeanieContext, parameters: &Vec<String>) {
     for instruction in context.instructions {
         instruction.execute(&mut stripped_context, parameters);
     }
-    
-    println!("{:#?}", stripped_context)
 }

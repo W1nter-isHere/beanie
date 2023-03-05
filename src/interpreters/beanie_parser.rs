@@ -20,7 +20,7 @@ struct BeanieParser;
 
 pub fn parse(bn_file_path: String, bn_file: String) -> BeanieContext {
     let mut constants = HashMap::new();
-    let mut functions = HashMap::new();
+    let mut functions = Vec::new();
     let mut instructions = Vec::new();
     let mut inputs = Vec::new();
     let mut outputs = Vec::new();
@@ -89,6 +89,11 @@ pub fn parse(bn_file_path: String, bn_file: String) -> BeanieContext {
                         Rule::function_declaration => {
                             let mut parameters: Vec<String> = Vec::new();
                             let function_name = statement_components.next().unwrap().as_str().trim();
+                            if has_constant(&constants, function_name) || has_function(&functions, function_name) {
+                                logger::log_error("Can not have 2 functions or constants with the same name");
+                                unreachable!()
+                            }
+                            
                             statement_components.next(); // skip the open parentheses
 
                             // first parameter
@@ -102,14 +107,19 @@ pub fn parse(bn_file_path: String, bn_file: String) -> BeanieContext {
                             statement_components.next(); // skip the = sign
                             let expression = get_expression(&mut statement_components);
 
-                            functions.insert(Function::new(function_name.to_string(), parameters), expression);
+                            functions.push(Function::new(function_name.to_string(), parameters, expression));
                         }
                         Rule::constant => {
                             let mut constant_names: Vec<String> = Vec::new();
-                            constant_names.push(statement_components.next().unwrap().as_str().trim().to_string());
 
-                            while statement_components.next().filter(|token| token.as_rule() == Rule::comma).is_some() {
-                                constant_names.push(statement_components.next().unwrap().as_str().trim().to_string());
+                            loop {
+                                let name = statement_components.next().unwrap().as_str().trim().to_string();
+                                if has_constant(&constants, name.as_str()) || has_function(&functions, name.as_str()) {
+                                    logger::log_error("Can not have 2 functions or constants with the same name");
+                                    unreachable!()
+                                }
+                                constant_names.push(name);
+                                if statement_components.next().filter(|token| token.as_rule() == Rule::comma).is_none() { break; }
                             }
 
                             constants.insert(constant_names, get_expression(&mut statement_components));
@@ -133,6 +143,19 @@ pub fn parse(bn_file_path: String, bn_file: String) -> BeanieContext {
         inputs,
         outputs,
     }
+}
+
+fn has_constant(constants: &HashMap<Vec<String>, BeanieExpression>, string: &str) -> bool {
+    for key in constants.keys() {
+        if key.iter().any(|s| s == string) {
+            return true;
+        }
+    }
+    false
+}
+
+fn has_function(functions: &Vec<Function>, string: &str) -> bool {
+    functions.iter().any(|f| f.name == string)
 }
 
 fn get_expression(statement_components: &mut Pairs<Rule>) -> BeanieExpression {

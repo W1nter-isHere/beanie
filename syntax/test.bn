@@ -1,1 +1,2 @@
-print 5 as irrational
+f(x) = 2x / 10
+print f(2) as complex
