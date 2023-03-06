@@ -1,7 +1,7 @@
 /// INSTRUCTIONS
 instruction = @{ ("print" | "graph" | "out") ~ WHITE_SPACE }
 as_keyword = { "as" }
-variable_name = { !instruction ~ !as_keyword ~ !data_type ~ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_" | "-" )* }
+variable_name = { !instruction ~ !as_keyword ~ !data_type ~ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_" )* }
 
 /// TYPES
 data_type = { "decimal" | "idecimal" | "complex" | "frac" | "ifrac" | "irrational" }

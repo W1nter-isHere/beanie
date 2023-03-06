@@ -24,7 +24,10 @@ impl BeanieExpression {
 
         for component in expr.clone().into_inner().flatten() {
             if component.as_rule() == Rule::variable_name {
-                let name = component.as_str().to_string();
+                let name = component.as_str().trim().to_string();
+                if math_context.vars.contains_key(&name) || math_context.funcs.contains_key(&name) {
+                    continue;
+                } 
                 
                 if bn_context.has_constant(&name) {
                     let constant_expression = bn_context.get_constant(&name).unwrap();

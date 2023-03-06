@@ -19,7 +19,6 @@ impl PrintInstruction {
 
 impl Instruction for PrintInstruction {
     fn execute(&self, context: &mut StrippedBeanieContext, _: &Vec<String>) {
-        println!("{}", self.expression.get_math().unwrap().as_str());
         logger::log_info(self.expression.evaluate_to_string(context).as_str());
     }
 
