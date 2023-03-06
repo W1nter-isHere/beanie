@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use pest::iterators::{Pair, Pairs};
 use pest::Parser;
-use crate::data::beanie_context::BeanieContext;
+use crate::data::contexts::beanie_context::BeanieContext;
 use crate::data::expression::data_type::DataType;
 use crate::data::expression::BeanieExpression;
 use crate::data::function::Function;

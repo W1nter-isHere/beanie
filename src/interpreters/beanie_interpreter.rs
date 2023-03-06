@@ -1,4 +1,4 @@
-use crate::data::beanie_context::BeanieContext;
+use crate::data::contexts::beanie_context::BeanieContext;
 use crate::interpreters::beanie_parser;
 
 pub fn run(bn_file_path: String, bn_file: String, parameters: Vec<String>) {

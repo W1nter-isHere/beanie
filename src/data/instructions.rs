@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::fmt::Debug;
-use crate::data::beanie_context::{BeanieContext, StrippedBeanieContext};
+use crate::data::contexts::stripped_beanie_context::StrippedBeanieContext;
 use crate::data::expression::BeanieExpression;
 use crate::data::expression::expression_type::ExpressionType;
 use crate::utilities::logger;

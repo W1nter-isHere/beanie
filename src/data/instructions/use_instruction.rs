@@ -1,5 +1,5 @@
 use std::path::PathBuf;
-use crate::data::beanie_context::StrippedBeanieContext;
+use crate::data::contexts::stripped_beanie_context::StrippedBeanieContext;
 use crate::data::expression::BeanieExpression;
 use crate::data::function::Function;
 use crate::data::instructions::Instruction;

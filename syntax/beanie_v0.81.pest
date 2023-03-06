@@ -33,7 +33,7 @@ numeric_expression = _{ decimal | fraction | negative_whole_numbers | positive_w
 
 /// EXPRESSIONS
 simple_math_expression = !{ (numeric_expression ~ variable_name?) | variable_name }
-function_call_expression = !{ variable_name ~ open_parentheses ~ simple_math_expression ~ (comma ~ simple_math_expression)* ~ close_parentheses }
+function_call_expression = !{ variable_name ~ open_parentheses ~ (simple_math_expression ~ (comma ~ simple_math_expression)*)? ~ close_parentheses }
 math_expression = _{ subtraction? ~ (open_parentheses)* ~ subtraction? ~ (function_call_expression | simple_math_expression) ~ close_parentheses* }
 operated_fm_math = !{ math_expression ~ (operators ~ math_expression)* }
 expression = ${ operated_fm_math ~ (WHITE_SPACE? ~ as_keyword ~ WHITE_SPACE ~ data_type)? }
@@ -45,7 +45,7 @@ in_operation = ${ "in" ~ WHITE_SPACE ~ variable_name }
 use_operation = ${ "use" ~ WHITE_SPACE ~ file_path }
 
 constant = { variable_name ~ (comma ~ variable_name)* ~ assignment_operator ~ expression }
-function_declaration = { variable_name ~ open_parentheses ~ variable_name ~ (comma ~ variable_name)* ~ close_parentheses ~ assignment_operator ~ expression }
+function_declaration = { variable_name ~ open_parentheses ~ (variable_name ~ (comma ~ variable_name)*)? ~ close_parentheses ~ assignment_operator ~ expression }
 line_comment = _{ "//" ~ ANY* } 
 
 line = { line_comment | in_operation | use_operation | operation | operation_argument | function_declaration | constant }

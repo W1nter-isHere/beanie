@@ -1,6 +1,7 @@
 use std::fmt::{Debug, Display, Formatter};
 use mexprp::{Calculation, Context, Func, MathError, Num, Term};
-use crate::data::beanie_context::StrippedBeanieContext;
+use crate::data::contexts::math_context::MathContext;
+use crate::data::contexts::stripped_beanie_context::StrippedBeanieContext;
 use crate::data::expression::BeanieExpression;
 
 #[derive(Clone)]
@@ -25,12 +26,12 @@ impl Function {
 impl<N: Num + 'static> Func<N> for Function {
     fn eval(&self, args: &[Term<N>], ctx: &Context<N>) -> Calculation<N> {
         if args.len() != self.parameters.len() { return Err(MathError::IncorrectArguments) }
-        
+
         let mut function_ctx = ctx.clone();
         for i in 0..args.len() {
             function_ctx.set_var(&self.parameters[i], args[i].eval_ctx(ctx).unwrap());
         }
-        
+
         if self.external_context.is_some() {
             if let BeanieExpression::Math(expr, _) = &self.expression {
                 let file_context = self.expression.construct_math_context::<N>(&expr, &self.external_context.clone().unwrap());
@@ -44,7 +45,7 @@ impl<N: Num + 'static> Func<N> for Function {
             }
         }
         
-        Ok(self.expression.evaluate_with_math_ctx(function_ctx))
+        Ok(self.expression.evaluate(MathContext::Math::<N>(function_ctx)))
     }
 }
 
