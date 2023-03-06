@@ -1,0 +1,2 @@
+use examples/quadratic_formula.bn
+print quadratic_formula(2, 4, 4) as complex

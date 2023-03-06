@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::f64::consts;
 use pest::iterators::{Pair, Pairs};
 use pest::Parser;
 use crate::data::contexts::beanie_context::BeanieContext;
@@ -13,9 +14,10 @@ use crate::data::instructions::print_instruction::PrintInstruction;
 use crate::data::instructions::use_instruction::UseInstruction;
 use crate::utilities::{keywords, logger};
 use crate::interpreters::expression_parser;
+use crate::utilities::file_utils::add_suffix;
 
 #[derive(Parser)]
-#[grammar = "syntax/beanie_v0.81.pest"]
+#[grammar = "syntax/beanie_v0.83.pest"]
 struct BeanieParser;
 
 pub fn parse(bn_file_path: String, bn_file: String, variable_suffix: &str) -> BeanieContext {
@@ -24,7 +26,7 @@ pub fn parse(bn_file_path: String, bn_file: String, variable_suffix: &str) -> Be
     let mut instructions = Vec::new();
     let mut inputs = Vec::new();
     let mut output = None;
-
+    
     match BeanieParser::parse(Rule::file, bn_file.as_str()) {
         Ok(file) => {
             let f = file.clone().next().unwrap();
@@ -146,6 +148,7 @@ pub fn parse(bn_file_path: String, bn_file: String, variable_suffix: &str) -> Be
     
     BeanieContext {
         beanie_file_path: bn_file_path,
+        context_suffix: variable_suffix.to_string(),
         constants,
         functions,
         instructions,
@@ -169,12 +172,4 @@ fn has_function(functions: &Vec<Function>, string: &str) -> bool {
 
 fn get_expression(statement_components: &mut Pairs<Rule>, suffix: &str) -> BeanieExpression {
     expression_parser::parse(statement_components.next().unwrap().as_str().to_string(), suffix)
-}
-
-fn add_suffix(name: &str, suffix: &str) -> String {
-    if suffix.is_empty() { 
-        return name.to_string();
-    }
-    
-    String::from(name) + "_" + suffix
 }

@@ -21,3 +21,11 @@ pub fn random_suffix() -> String {
 
     result
 }
+
+pub fn add_suffix(name: &str, suffix: &str) -> String {
+    if suffix.is_empty() {
+        return name.to_string();
+    }
+
+    String::from(name) + "_" + suffix
+}

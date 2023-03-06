@@ -6,6 +6,7 @@ use crate::data::function::Function;
 #[derive(Debug, Clone)]
 pub struct StrippedBeanieContext {
     pub beanie_file_path: String,
+    pub context_suffix: String,
     pub constants: HashMap<Vec<String>, BeanieExpression>,
     pub functions: Vec<Function>,
     pub inputs: Vec<String>,
@@ -16,6 +17,7 @@ impl StrippedBeanieContext {
     pub fn from(original: &BeanieContext) -> StrippedBeanieContext {
         StrippedBeanieContext {
             beanie_file_path: original.beanie_file_path.clone(),
+            context_suffix: original.context_suffix.clone(),
             constants: original.constants.clone(),
             functions: original.functions.clone(),
             inputs: original.inputs.clone(),

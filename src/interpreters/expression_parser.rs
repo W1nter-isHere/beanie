@@ -6,7 +6,7 @@ use crate::DEFAULT_DATA_TYPE;
 use crate::utilities::logger;
 
 #[derive(Parser)]
-#[grammar = "syntax/expression_v0.21.pest"]
+#[grammar = "syntax/expression_v0.23.pest"]
 struct ExpressionParser;
 
 pub fn parse(expression_text: String, suffix: &str) -> BeanieExpression {

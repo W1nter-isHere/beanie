@@ -7,6 +7,7 @@ use crate::data::instructions::Instruction;
 #[derive(Debug)]
 pub struct BeanieContext {
     pub beanie_file_path: String,
+    pub context_suffix: String,
     pub constants: HashMap<Vec<String>, BeanieExpression>,
     pub functions: Vec<Function>,
     pub instructions: Vec<Box<dyn Instruction>>,
@@ -18,6 +19,7 @@ impl BeanieContext {
     pub fn strip(&self) -> StrippedBeanieContext {
         StrippedBeanieContext {
             beanie_file_path: self.beanie_file_path.clone(),
+            context_suffix: self.context_suffix.clone(),
             constants: self.constants.clone(),
             functions: self.functions.clone(),
             inputs: self.inputs.clone(),
