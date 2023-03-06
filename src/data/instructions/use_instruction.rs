@@ -8,7 +8,7 @@ use crate::utilities::{file_utils, logger};
 
 #[derive(Debug, Clone)]
 pub struct UseInstruction {
-    file_path: String
+    file_path: String,
 }
 
 impl UseInstruction {
@@ -27,12 +27,15 @@ impl Instruction for UseInstruction {
             unreachable!()
         }
 
+        let name = PathBuf::from(&self.file_path).file_stem().unwrap().to_string_lossy().to_string();
+        
+        if context.has_function(&name) { return; }
         context.functions.push(Function {
-            name: PathBuf::from(&self.file_path).file_stem().unwrap().to_string_lossy().to_string(),
+            name,
             parameters: external_file.inputs.clone(),
             expression: external_file.output.clone().unwrap(),
             external_context: Some(external_file),
-        })
+        });
     }
 
     fn add_argument(&mut self, name: String, expression: BeanieExpression) {
