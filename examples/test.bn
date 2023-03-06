@@ -1,0 +1,4 @@
+a = 2
+b = 8
+c = 4
+print sqrt(b*b - 4a * c)

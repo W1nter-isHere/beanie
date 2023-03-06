@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use pest::iterators::{Pair, Pairs};
 use pest::Parser;
 use crate::data::beanie_context::BeanieContext;
-use crate::data::data_type::DataType;
+use crate::data::expression::data_type::DataType;
 use crate::data::expression::BeanieExpression;
 use crate::data::function::Function;
 use crate::data::instructions::graph_instruction::GraphInstruction;
@@ -11,19 +11,19 @@ use crate::data::instructions::Instruction;
 use crate::data::instructions::out_instruction::OutInstruction;
 use crate::data::instructions::print_instruction::PrintInstruction;
 use crate::data::instructions::use_instruction::UseInstruction;
-use crate::{keywords, logger};
+use crate::utilities::{keywords, logger};
 use crate::interpreters::expression_parser;
 
 #[derive(Parser)]
-#[grammar = "syntax/grammar/beanie_v0.7.pest"]
+#[grammar = "syntax/beanie_v0.81.pest"]
 struct BeanieParser;
 
-pub fn parse(bn_file_path: String, bn_file: String) -> BeanieContext {
+pub fn parse(bn_file_path: String, bn_file: String, variable_suffix: &str) -> BeanieContext {
     let mut constants = HashMap::new();
     let mut functions = Vec::new();
     let mut instructions = Vec::new();
     let mut inputs = Vec::new();
-    let mut outputs = Vec::new();
+    let mut output = None;
 
     match BeanieParser::parse(Rule::file, bn_file.as_str()) {
         Ok(file) => {
@@ -40,13 +40,18 @@ pub fn parse(bn_file_path: String, bn_file: String) -> BeanieContext {
                     match statement.as_rule() {
                         Rule::operation => {
                             let instruction = statement_components.next().unwrap().as_str().trim();
-                            let expression = get_expression(&mut statement_components);
+                            let expression = get_expression(&mut statement_components, variable_suffix);
 
                             let instruction_obj: Box<dyn Instruction> = match instruction {
                                 keywords::instructions::PRINT => Box::new(PrintInstruction::new(expression)),
                                 keywords::instructions::GRAPH => Box::new(GraphInstruction::new(expression)),
                                 keywords::instructions::OUT => {
-                                    outputs.push(expression.clone());
+                                    if output.is_some() {
+                                        logger::log_error("Can not have more than 1 output!");
+                                        unreachable!()
+                                    }
+                                    
+                                    output = Some(expression.clone());
                                     Box::new(OutInstruction::new(expression))
                                 }
                                 _ => {
@@ -58,7 +63,7 @@ pub fn parse(bn_file_path: String, bn_file: String) -> BeanieContext {
                             instructions.push(instruction_obj);
                         }
                         Rule::in_operation => {
-                            let name = statement_components.next().unwrap().as_str().to_string();
+                            let name = add_suffix(statement_components.next().unwrap().as_str(), variable_suffix);
                             inputs.push(name.clone());
                             instructions.push(Box::new(InInstruction::new(name)));
                         }
@@ -74,7 +79,7 @@ pub fn parse(bn_file_path: String, bn_file: String) -> BeanieContext {
                                             Rule::file_path => BeanieExpression::FilePath(statement_components.next().unwrap().as_str().to_string()),
                                             Rule::boolean => BeanieExpression::Boolean(statement_components.next().unwrap().as_str().parse::<bool>().unwrap()),
                                             Rule::data_type => BeanieExpression::DataType(statement_components.next().unwrap().as_str().parse::<DataType>().unwrap()),
-                                            Rule::expression => get_expression(&mut statement_components),
+                                            Rule::expression => get_expression(&mut statement_components, variable_suffix),
                                             _ => unreachable!(),
                                         }
                                         None => unreachable!(),
@@ -88,24 +93,28 @@ pub fn parse(bn_file_path: String, bn_file: String) -> BeanieContext {
                         }
                         Rule::function_declaration => {
                             let mut parameters: Vec<String> = Vec::new();
-                            let function_name = statement_components.next().unwrap().as_str().trim();
-                            if has_constant(&constants, function_name) || has_function(&functions, function_name) {
+                            let function_name = add_suffix(statement_components.next().unwrap().as_str().trim(), variable_suffix);
+                            if has_constant(&constants, function_name.as_str()) || has_function(&functions, function_name.as_str()) {
                                 logger::log_error("Can not have 2 functions or constants with the same name");
                                 unreachable!()
                             }
                             
                             statement_components.next(); // skip the open parentheses
-
-                            // first parameter
-                            parameters.push(statement_components.next().unwrap().as_str().trim().to_string());
-
-                            // as long as the next token is not closing parentheses, it means there are more parameters
-                            while statement_components.next().filter(|token| token.as_rule() == Rule::close_parentheses).is_none() {
-                                parameters.push(statement_components.next().unwrap().as_str().trim().to_string());
+                            
+                            // if there are any parameters
+                            if statement_components.peek().filter(|token| token.as_rule() == Rule::close_parentheses).is_none() {
+                                loop {
+                                    let parameter_name = statement_components.next().unwrap().as_str().trim().to_string();
+                                    parameters.push(add_suffix(&parameter_name, variable_suffix));
+                                    // as long as the next token is not closing parentheses, it means there are more parameters
+                                    if statement_components.next().filter(|token| token.as_rule() == Rule::close_parentheses).is_some() { break; }
+                                }
+                            } else {  
+                                statement_components.next(); // skip the )
                             }
-
+                            
                             statement_components.next(); // skip the = sign
-                            let expression = get_expression(&mut statement_components);
+                            let expression = get_expression(&mut statement_components, variable_suffix);
 
                             functions.push(Function::new(function_name.to_string(), parameters, expression));
                         }
@@ -113,7 +122,7 @@ pub fn parse(bn_file_path: String, bn_file: String) -> BeanieContext {
                             let mut constant_names: Vec<String> = Vec::new();
 
                             loop {
-                                let name = statement_components.next().unwrap().as_str().trim().to_string();
+                                let name = add_suffix(statement_components.next().unwrap().as_str().trim(), variable_suffix);
                                 if has_constant(&constants, name.as_str()) || has_function(&functions, name.as_str()) {
                                     logger::log_error("Can not have 2 functions or constants with the same name");
                                     unreachable!()
@@ -122,7 +131,7 @@ pub fn parse(bn_file_path: String, bn_file: String) -> BeanieContext {
                                 if statement_components.next().filter(|token| token.as_rule() == Rule::comma).is_none() { break; }
                             }
 
-                            constants.insert(constant_names, get_expression(&mut statement_components));
+                            constants.insert(constant_names, get_expression(&mut statement_components, variable_suffix));
                         }
                         _ => unreachable!()
                     }
@@ -134,14 +143,14 @@ pub fn parse(bn_file_path: String, bn_file: String) -> BeanieContext {
             unreachable!()
         }
     };
-
+    
     BeanieContext {
         beanie_file_path: bn_file_path,
         constants,
         functions,
         instructions,
         inputs,
-        outputs,
+        output,
     }
 }
 
@@ -158,6 +167,14 @@ fn has_function(functions: &Vec<Function>, string: &str) -> bool {
     functions.iter().any(|f| f.name == string)
 }
 
-fn get_expression(statement_components: &mut Pairs<Rule>) -> BeanieExpression {
-    expression_parser::parse(statement_components.next().unwrap().as_str().to_string())
+fn get_expression(statement_components: &mut Pairs<Rule>, suffix: &str) -> BeanieExpression {
+    expression_parser::parse(statement_components.next().unwrap().as_str().to_string(), suffix)
+}
+
+fn add_suffix(name: &str, suffix: &str) -> String {
+    if suffix.is_empty() { 
+        return name.to_string();
+    }
+    
+    String::from(name) + "_" + suffix
 }

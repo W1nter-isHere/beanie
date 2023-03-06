@@ -5,36 +5,64 @@ extern crate pest;
 
 mod data;
 mod interpreters;
-mod logger;
-mod keywords;
+mod utilities;
 
-use std::{env, fs};
+use std::env;
 use std::sync::atomic::AtomicBool;
-use crate::data::data_type::DataType;
+use crate::data::expression::data_type::DataType;
 use crate::interpreters::{beanie_interpreter};
+use crate::utilities::{file_utils, logger};
 
 lazy_static! {
-    pub static ref DEFAULT_DATA_TYPE: DataType = DataType::Decimal;
     pub static ref CLEANED_OUTPUT: AtomicBool = AtomicBool::new(false);
 }
 
+static mut DEFAULT_DATA_TYPE: DataType = DataType::Decimal;
+
 fn main() {
     let args: Vec<String> = env::args().collect();
-    
+
     // no file to run
     if args.len() <= 1 {
         logger::log_error("No file provided");
     }
-
+    
     let file_path = &args[1];
-    let file_content = match fs::read_to_string(file_path) {
-        Ok(content) => content,
-        Err(_) => {
-            logger::log_error(format!("Failed to read file {}", file_path).as_str());
-            unreachable!()
-        }
+    let parameters = match args.iter().position(|s| s.starts_with("--")) {
+        Some(index) => { 
+            let options = args[index..].to_vec();
+
+            for option in options {
+                let option = option[2..].to_string();
+
+                match option.chars().into_iter().position(|c| c == '=') {
+                    Some(index) => {
+                        let option_data = option[index+1..].to_string();
+                        let option = option[..index].to_string();
+                        
+                        match option.as_str() {
+                            "default_data_type" => unsafe {
+                                DEFAULT_DATA_TYPE = option_data.parse::<DataType>().unwrap();
+                            },
+                            _ => {
+                                logger::log_info(format!("Unknown option {}", option).as_str())
+                            }
+                        }
+                    }
+                    None => {
+                        todo!()
+                    }
+                }
+            }
+            
+            args[2..index].to_vec()
+        },
+        None => args[2..].to_vec(),
     };
     
-    let parameters = &args[2..].to_vec();
-    beanie_interpreter::run(file_path.clone(), file_content, &parameters);
+    beanie_interpreter::run(
+        file_path.clone(),
+        file_utils::read_file(file_path),
+        parameters
+    );
 }

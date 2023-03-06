@@ -1,10 +1,9 @@
 use std::collections::HashMap;
 use std::fmt::Debug;
-use crate::data::beanie_context::BeanieContext;
-use crate::data::data_type::DataType;
+use crate::data::beanie_context::{BeanieContext, StrippedBeanieContext};
 use crate::data::expression::BeanieExpression;
-use crate::data::expression_type::ExpressionType;
-use crate::logger;
+use crate::data::expression::expression_type::ExpressionType;
+use crate::utilities::logger;
 
 pub mod print_instruction;
 pub mod graph_instruction;
@@ -13,7 +12,7 @@ pub mod in_instruction;
 pub mod out_instruction;
 
 pub trait Instruction: Debug {
-    fn execute(&self, context: &mut BeanieContext, parameters: &Vec<String>);
+    fn execute(&self, context: &mut StrippedBeanieContext, parameters: &Vec<String>);
     fn add_argument(&mut self, name: String, expression: BeanieExpression);
 }
 

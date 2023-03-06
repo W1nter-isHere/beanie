@@ -1,9 +1,0 @@
-in h
-in j
-in k
-
-a = 1/4 as frac
-b = 2.33 as decimal
-x1, x2 = quadratic_formula(2, 3, 6)
-
-f(x) = x* a ^ 2

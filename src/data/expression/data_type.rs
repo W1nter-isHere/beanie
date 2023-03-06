@@ -1,6 +1,6 @@
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
-use crate::keywords;
+use crate::utilities::keywords;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum DataType {

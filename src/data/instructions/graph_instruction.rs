@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use crate::data::beanie_context::BeanieContext;
+use crate::data::beanie_context::StrippedBeanieContext;
 use crate::data::expression::BeanieExpression;
 use crate::data::instructions::Instruction;
 
@@ -19,7 +19,7 @@ impl GraphInstruction {
 }
 
 impl Instruction for GraphInstruction {
-    fn execute(&self, context: &mut BeanieContext, parameters: &Vec<String>) {
+    fn execute(&self, context: &mut StrippedBeanieContext, parameters: &Vec<String>) {
         
     }
 

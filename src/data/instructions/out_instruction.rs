@@ -4,13 +4,13 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::Ordering;
 use colored::Colorize;
-use crate::data::beanie_context::BeanieContext;
+use crate::data::beanie_context::StrippedBeanieContext;
 use crate::data::expression::BeanieExpression;
 use crate::data::instructions;
 use crate::data::instructions::Instruction;
-use crate::keywords::booleans::TRUE;
+use crate::utilities::keywords::booleans::TRUE;
 use crate::CLEANED_OUTPUT;
-use crate::data::expression_type::ExpressionType;
+use crate::data::expression::expression_type::ExpressionType;
 
 const OUT_TO_FILE: &str = "output-to-file";
 const OUT_FILE: &str = "output-file";
@@ -38,7 +38,7 @@ impl OutInstruction {
 }
 
 impl Instruction for OutInstruction {
-    fn execute(&self, context: &mut BeanieContext, parameters: &Vec<String>) {
+    fn execute(&self, context: &mut StrippedBeanieContext, parameters: &Vec<String>) {
         if self.arguments.contains_key(OUT_TO_FILE) && self.arguments[OUT_TO_FILE].evaluate_to_string(context) == TRUE { 
             
             let file_path = match self.arguments.contains_key(OUT_FILE) {
