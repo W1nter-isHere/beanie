@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::fmt::Debug;
+use std::thread::JoinHandle;
 use crate::data::contexts::stripped_beanie_context::StrippedBeanieContext;
 use crate::data::expression::BeanieExpression;
 use crate::data::expression::expression_type::ExpressionType;
@@ -12,7 +13,7 @@ pub mod in_instruction;
 pub mod out_instruction;
 
 pub trait Instruction: Debug {
-    fn execute(&self, context: &mut StrippedBeanieContext, parameters: &Vec<String>);
+    fn execute(&self, context: &mut StrippedBeanieContext, parameters: &Vec<String>, threads_to_wait_for: &mut Vec<JoinHandle<()>>);
     fn add_argument(&mut self, name: String, expression: BeanieExpression);
 }
 

@@ -18,9 +18,11 @@ pub mod expression_type;
 #[derive(Clone, Debug)]
 pub enum BeanieExpression {
     Math(Pair<'static, Rule>, DataType),
+    SimpleF64(f64),
     Boolean(bool),
     FilePath(String),
     DataType(DataType),
+    String(String),
 }
 
 impl BeanieExpression {
@@ -37,7 +39,7 @@ impl BeanieExpression {
                 
                 if bn_context.has_constant(&name) {
                     let constant_expression = bn_context.get_constant(&name).unwrap();
-                    let result = constant_expression.0.evaluate::<N>(MathContext::StrippedBeanie::<N>(bn_context.clone()));
+                    let result = constant_expression.0.evaluate::<N>(&MathContext::StrippedBeanie::<N>(bn_context.clone()));
                     let value = match result {
                         Answer::Single(answer) => answer,
                         Answer::Multiple(answers) => answers[constant_expression.1].clone(),
@@ -49,37 +51,40 @@ impl BeanieExpression {
             } 
         }
 
-        math_context.set_var(add_suffix("pi", bn_context.context_suffix.as_str()).as_str(), N::from_f64(consts::PI, &empty).unwrap());
-        math_context.set_var(add_suffix("e", bn_context.context_suffix.as_str()).as_str(), N::from_f64(consts::E, &empty).unwrap());
-        math_context.set_var(add_suffix("i", bn_context.context_suffix.as_str()).as_str(), N::from_f64_complex((0.0, 1.0), &empty).unwrap());
-        math_context.funcs.insert(add_suffix("sin", bn_context.context_suffix.as_str()), Rc::new(Sin));
-        math_context.funcs.insert(add_suffix("cos", bn_context.context_suffix.as_str()), Rc::new(Cos));
-        math_context.funcs.insert(add_suffix("max", bn_context.context_suffix.as_str()), Rc::new(Max));
-        math_context.funcs.insert(add_suffix("min", bn_context.context_suffix.as_str()), Rc::new(Min));
-        math_context.funcs.insert(add_suffix("sqrt", bn_context.context_suffix.as_str()), Rc::new(Sqrt));
-        math_context.funcs.insert(add_suffix("nrt", bn_context.context_suffix.as_str()), Rc::new(Nrt));
-        math_context.funcs.insert(add_suffix("tan", bn_context.context_suffix.as_str()), Rc::new(Tan));
-        math_context.funcs.insert(add_suffix("abs", bn_context.context_suffix.as_str()), Rc::new(Abs));
-        math_context.funcs.insert(add_suffix("asin", bn_context.context_suffix.as_str()), Rc::new(Asin));
-        math_context.funcs.insert(add_suffix("acos", bn_context.context_suffix.as_str()), Rc::new(Acos));
-        math_context.funcs.insert(add_suffix("atan", bn_context.context_suffix.as_str()), Rc::new(Atan));
-        math_context.funcs.insert(add_suffix("atan2", bn_context.context_suffix.as_str()), Rc::new(Atan2));
-        math_context.funcs.insert(add_suffix("floor", bn_context.context_suffix.as_str()), Rc::new(Floor));
-        math_context.funcs.insert(add_suffix("round", bn_context.context_suffix.as_str()), Rc::new(Round));
-        math_context.funcs.insert(add_suffix("log", bn_context.context_suffix.as_str()), Rc::new(Log));
+        {
+            math_context.set_var(add_suffix("pi", bn_context.context_suffix.as_str()).as_str(), N::from_f64(consts::PI, &empty).unwrap());
+            math_context.set_var(add_suffix("e", bn_context.context_suffix.as_str()).as_str(), N::from_f64(consts::E, &empty).unwrap());
+            math_context.set_var(add_suffix("i", bn_context.context_suffix.as_str()).as_str(), N::from_f64_complex((0.0, 1.0), &empty).unwrap());
+            math_context.funcs.insert(add_suffix("sin", bn_context.context_suffix.as_str()), Rc::new(Sin));
+            math_context.funcs.insert(add_suffix("cos", bn_context.context_suffix.as_str()), Rc::new(Cos));
+            math_context.funcs.insert(add_suffix("max", bn_context.context_suffix.as_str()), Rc::new(Max));
+            math_context.funcs.insert(add_suffix("min", bn_context.context_suffix.as_str()), Rc::new(Min));
+            math_context.funcs.insert(add_suffix("sqrt", bn_context.context_suffix.as_str()), Rc::new(Sqrt));
+            math_context.funcs.insert(add_suffix("nrt", bn_context.context_suffix.as_str()), Rc::new(Nrt));
+            math_context.funcs.insert(add_suffix("tan", bn_context.context_suffix.as_str()), Rc::new(Tan));
+            math_context.funcs.insert(add_suffix("abs", bn_context.context_suffix.as_str()), Rc::new(Abs));
+            math_context.funcs.insert(add_suffix("asin", bn_context.context_suffix.as_str()), Rc::new(Asin));
+            math_context.funcs.insert(add_suffix("acos", bn_context.context_suffix.as_str()), Rc::new(Acos));
+            math_context.funcs.insert(add_suffix("atan", bn_context.context_suffix.as_str()), Rc::new(Atan));
+            math_context.funcs.insert(add_suffix("atan2", bn_context.context_suffix.as_str()), Rc::new(Atan2));
+            math_context.funcs.insert(add_suffix("floor", bn_context.context_suffix.as_str()), Rc::new(Floor));
+            math_context.funcs.insert(add_suffix("round", bn_context.context_suffix.as_str()), Rc::new(Round));
+            math_context.funcs.insert(add_suffix("log", bn_context.context_suffix.as_str()), Rc::new(Log));
+        }   
         
         math_context
     }
 
-    pub fn evaluate<N: Num + 'static>(&self, ctx: MathContext<N>) -> Answer<N> {
+    pub fn evaluate<N: Num + 'static>(&self, ctx: &MathContext<N>) -> Answer<N> {
         match self {
             BeanieExpression::Math(expr, _) => {
                 let str = expr.as_str().trim();
                 match ctx {
                     MathContext::StrippedBeanie(bn_context) => Expression::parse_ctx(str, self.construct_math_context::<N>(expr, &bn_context)).unwrap().eval().unwrap(),
-                    MathContext::Math(math_context) => Expression::parse_ctx(str, math_context).unwrap().eval().unwrap(),
+                    MathContext::Math(math_context) => Expression::parse_ctx(str, math_context.clone()).unwrap().eval().unwrap(),
                 }
             },
+            BeanieExpression::SimpleF64(value) => N::from_f64(value.clone(), &Context::empty()).unwrap(),
             _ => unreachable!()
         }
     }
@@ -88,17 +93,19 @@ impl BeanieExpression {
         match self {
             BeanieExpression::Math(expression_component, data_type) => {
                 match data_type {
-                    DataType::Decimal => self.evaluate::<f64>(MathContext::StrippedBeanie::<f64>(context.clone())).to_string(),
-                    DataType::ImaginaryDecimal => self.evaluate::<ComplexFloat>(MathContext::StrippedBeanie::<ComplexFloat>(context.clone())).to_string(),
-                    DataType::Complex => self.evaluate::<Complex>(MathContext::StrippedBeanie::<Complex>(context.clone())).to_string(),
-                    DataType::Rational => self.evaluate::<Rational>(MathContext::StrippedBeanie::<Rational>(context.clone())).to_string(),
-                    DataType::ComplexRational => self.evaluate::<ComplexRugRat>(MathContext::StrippedBeanie::<ComplexRugRat>(context.clone())).to_string(),
+                    DataType::Decimal => self.evaluate::<f64>(&MathContext::StrippedBeanie::<f64>(context.clone())).to_string(),
+                    DataType::ImaginaryDecimal => self.evaluate::<ComplexFloat>(&MathContext::StrippedBeanie::<ComplexFloat>(context.clone())).to_string(),
+                    DataType::Complex => self.evaluate::<Complex>(&MathContext::StrippedBeanie::<Complex>(context.clone())).to_string(),
+                    DataType::Rational => self.evaluate::<Rational>(&MathContext::StrippedBeanie::<Rational>(context.clone())).to_string(),
+                    DataType::ComplexRational => self.evaluate::<ComplexRugRat>(&MathContext::StrippedBeanie::<ComplexRugRat>(context.clone())).to_string(),
                     _ => expression_component.as_str().to_string(),
                 }
             } 
             BeanieExpression::Boolean(b) => b.to_string(),
             BeanieExpression::FilePath(file_path) => file_path.to_string(),
             BeanieExpression::DataType(data_type) => data_type.to_string(),
+            BeanieExpression::String(str) => str.trim_matches('\'').to_string(),
+            BeanieExpression::SimpleF64(value) => value.to_string(),
         }
     }
     
@@ -115,6 +122,8 @@ impl BeanieExpression {
             BeanieExpression::Boolean(_) => ExpressionType::Boolean,
             BeanieExpression::FilePath(_) => ExpressionType::FilePath,
             BeanieExpression::DataType(_) => ExpressionType::DataType,
+            BeanieExpression::String(_) => ExpressionType::String,
+            BeanieExpression::SimpleF64(_) => ExpressionType::MathExpression,
         }
     }
 }

@@ -1,3 +1,4 @@
+use std::thread::JoinHandle;
 use crate::data::contexts::stripped_beanie_context::StrippedBeanieContext;
 use crate::data::expression::BeanieExpression;
 use crate::data::instructions::Instruction;
@@ -19,7 +20,7 @@ impl InInstruction {
 }
 
 impl Instruction for InInstruction {
-    fn execute(&self, context: &mut StrippedBeanieContext, parameters: &Vec<String>) {
+    fn execute(&self, context: &mut StrippedBeanieContext, parameters: &Vec<String>, _: &mut Vec<JoinHandle<()>>) {
         if let Some(index) = context.inputs.iter().position(|val| val == &self.input_name) {
             if index >= parameters.len() {
                 logger::log_error("There are more required inputs than the number of inputs given");

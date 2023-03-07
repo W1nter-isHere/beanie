@@ -1,5 +1,5 @@
 use std::fmt::{Debug, Display, Formatter};
-use mexprp::{Calculation, Context, Func, MathError, Num, Term};
+use mexprp::{Answer, Calculation, Context, Func, MathError, Num, Term};
 use crate::data::contexts::math_context::MathContext;
 use crate::data::contexts::stripped_beanie_context::StrippedBeanieContext;
 use crate::data::expression::BeanieExpression;
@@ -21,20 +21,18 @@ impl Function {
             external_context: None,
         }
     }
-}
-
-impl<N: Num + 'static> Func<N> for Function {
-    fn eval(&self, args: &[Term<N>], ctx: &Context<N>) -> Calculation<N> {
-        if args.len() != self.parameters.len() { return Err(MathError::IncorrectArguments) }
+    
+    fn evaluate_internal<N: Num + 'static>(&self, parameters: Vec<Answer<N>>, bn_ctx: &Option<StrippedBeanieContext>, ctx: &Context<N>) -> Calculation<N> {
+        if parameters.len() != self.parameters.len() { return Err(MathError::IncorrectArguments) }
 
         let mut function_ctx = ctx.clone();
-        for i in 0..args.len() {
-            function_ctx.set_var(&self.parameters[i], args[i].eval_ctx(ctx).unwrap());
+        for i in 0..parameters.len() {
+            function_ctx.set_var(&self.parameters[i], parameters[i].clone());
         }
 
-        if self.external_context.is_some() {
+        if bn_ctx.is_some() {
             if let BeanieExpression::Math(expr, _) = &self.expression {
-                let file_context = self.expression.construct_math_context::<N>(&expr, &self.external_context.clone().unwrap());
+                let file_context = self.expression.construct_math_context::<N>(&expr, &bn_ctx.clone().unwrap());
                 for (key, value) in file_context.funcs {
                     function_ctx.funcs.insert(key, value);
                 }
@@ -44,8 +42,19 @@ impl<N: Num + 'static> Func<N> for Function {
                 }
             }
         }
-        
-        Ok(self.expression.evaluate(MathContext::Math::<N>(function_ctx)))
+
+        Ok(self.expression.evaluate(&MathContext::Math::<N>(function_ctx)))
+    }
+    
+    pub fn evaluate(&self, parameters: Vec<f64>, bn_ctx: StrippedBeanieContext) -> f64 {
+        let context: Context<f64> = Context::new();
+        self.evaluate_internal::<f64>(parameters.iter().map(|s| Answer::Single(s.clone())).collect(), &Some(bn_ctx), &context).unwrap().unwrap_single()
+    }
+}
+
+impl<N: Num + 'static> Func<N> for Function {
+    fn eval(&self, args: &[Term<N>], ctx: &Context<N>) -> Calculation<N> {
+        self.evaluate_internal(args.iter().map(|arg| arg.eval_ctx(ctx).unwrap()).collect(), &self.external_context, ctx)
     }
 }
 

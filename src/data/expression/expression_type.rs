@@ -6,6 +6,7 @@ pub enum ExpressionType {
     FilePath,
     Boolean,
     DataType,
+    String,
 }
 
 impl Display for ExpressionType {

@@ -1,2 +1,5 @@
-use examples/quadratic_formula.bn
-print quadratic_formula(2, 4, 4) as complex
+f(x) = 5 * sin((1/10)*x)
+graph f
+    title 'Title'
+    label_x 'Label X'
+print f(2)

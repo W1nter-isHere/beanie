@@ -7,8 +7,13 @@ pub fn run(bn_file_path: String, bn_file: String, parameters: Vec<String>) {
 
 fn interpret(context: BeanieContext, parameters: Vec<String>) {
     let mut stripped_context = context.strip();
+    let mut threads_to_wait = Vec::new();
     
     for instruction in context.instructions {
-        instruction.execute(&mut stripped_context, &parameters);
+        instruction.execute(&mut stripped_context, &parameters, &mut threads_to_wait);
+    }
+
+    for thread in threads_to_wait {
+        thread.join().unwrap();
     }
 }

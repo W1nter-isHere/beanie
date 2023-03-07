@@ -14,3 +14,15 @@ pest = "2.5.5"
 pest_derive = "2.5.5"
 rand = "0.8.5"
 rug = "1.19.1"
+
+[dependencies.pgfplots]
+version="0.5.1"
+features = [
+    "tectonic"
+]
+
+[dependencies.tectonic]
+version = "0.12.0"
+features = [
+    "native-tls-vendored"
+]

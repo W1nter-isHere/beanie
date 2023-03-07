@@ -1,4 +1,5 @@
 use std::fmt::Debug;
+use std::thread::JoinHandle;
 use crate::data::contexts::stripped_beanie_context::StrippedBeanieContext;
 use crate::data::expression::BeanieExpression;
 use crate::data::instructions::Instruction;
@@ -18,7 +19,7 @@ impl PrintInstruction {
 }
 
 impl Instruction for PrintInstruction {
-    fn execute(&self, context: &mut StrippedBeanieContext, _: &Vec<String>) {
+    fn execute(&self, context: &mut StrippedBeanieContext, _: &Vec<String>, _: &mut Vec<JoinHandle<()>>) {
         logger::log_info(self.expression.evaluate_to_string(context).as_str());
     }
 

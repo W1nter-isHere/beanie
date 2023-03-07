@@ -1,4 +1,5 @@
 in a
 in b
 in c
+
 out (-b + sqrt(b^2 - 4a * c)) / (2*a)

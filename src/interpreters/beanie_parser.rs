@@ -15,9 +15,10 @@ use crate::data::instructions::use_instruction::UseInstruction;
 use crate::utilities::{keywords, logger};
 use crate::interpreters::expression_parser;
 use crate::utilities::file_utils::add_suffix;
+use crate::utilities::keywords::instructions;
 
 #[derive(Parser)]
-#[grammar = "syntax/beanie_v0.83.pest"]
+#[grammar = "syntax/beanie_v0.86.pest"]
 struct BeanieParser;
 
 pub fn parse(bn_file_path: String, bn_file: String, variable_suffix: &str) -> BeanieContext {
@@ -46,7 +47,6 @@ pub fn parse(bn_file_path: String, bn_file: String, variable_suffix: &str) -> Be
 
                             let instruction_obj: Box<dyn Instruction> = match instruction {
                                 keywords::instructions::PRINT => Box::new(PrintInstruction::new(expression)),
-                                keywords::instructions::GRAPH => Box::new(GraphInstruction::new(expression)),
                                 keywords::instructions::OUT => {
                                     if output.is_some() {
                                         logger::log_error("Can not have more than 1 output!");
@@ -63,6 +63,10 @@ pub fn parse(bn_file_path: String, bn_file: String, variable_suffix: &str) -> Be
                             };
 
                             instructions.push(instruction_obj);
+                        }
+                        Rule::graph_operation => {
+                            let name = add_suffix(statement_components.next().unwrap().as_str(), variable_suffix);
+                            instructions.push(Box::new(GraphInstruction::new(name)));
                         }
                         Rule::in_operation => {
                             let name = add_suffix(statement_components.next().unwrap().as_str(), variable_suffix);
@@ -82,6 +86,7 @@ pub fn parse(bn_file_path: String, bn_file: String, variable_suffix: &str) -> Be
                                             Rule::boolean => BeanieExpression::Boolean(statement_components.next().unwrap().as_str().parse::<bool>().unwrap()),
                                             Rule::data_type => BeanieExpression::DataType(statement_components.next().unwrap().as_str().parse::<DataType>().unwrap()),
                                             Rule::expression => get_expression(&mut statement_components, variable_suffix),
+                                            Rule::string => BeanieExpression::String(statement_components.next().unwrap().as_str().to_string()),
                                             _ => unreachable!(),
                                         }
                                         None => unreachable!(),
