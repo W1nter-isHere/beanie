@@ -2,4 +2,5 @@ f(x) = 5 * sin((1/10)*x)
 graph f
     title 'Title'
     label_x 'Label X'
+    max_y 80
 print f(2)
