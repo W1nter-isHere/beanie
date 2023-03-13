@@ -1,30 +1,17 @@
 use std::collections::HashMap;
-use crate::data::contexts::beanie_context::BeanieContext;
 use crate::data::expression::BeanieExpression;
 use crate::data::function::Function;
 
 #[derive(Debug, Clone)]
-pub struct StrippedBeanieContext {
+pub struct BeanieRuntimeContext {
     pub beanie_file_path: String,
-    pub context_suffix: String,
     pub constants: HashMap<Vec<String>, BeanieExpression>,
-    pub functions: Vec<Function>,
+    pub functions: HashMap<String, Function>,
     pub inputs: Vec<String>,
     pub output: Option<BeanieExpression>,
 }
 
-impl StrippedBeanieContext {
-    pub fn from(original: &BeanieContext) -> StrippedBeanieContext {
-        StrippedBeanieContext {
-            beanie_file_path: original.beanie_file_path.clone(),
-            context_suffix: original.context_suffix.clone(),
-            constants: original.constants.clone(),
-            functions: original.functions.clone(),
-            inputs: original.inputs.clone(),
-            output: original.output.clone(),
-        }
-    }
-
+impl BeanieRuntimeContext {
     pub fn has_constant(&self, name: &str) -> bool {
         for key in self.constants.keys() {
             if key.iter().any(|s| s == name) {
@@ -35,7 +22,7 @@ impl StrippedBeanieContext {
     }
 
     pub fn has_function(&self, name: &str) -> bool {
-        self.functions.iter().any(|f| f.name == name)
+        self.functions.contains_key(name)
     }
 
     pub fn get_constant(&self, name: &str) -> Option<(BeanieExpression, usize)> {
@@ -48,12 +35,7 @@ impl StrippedBeanieContext {
     }
 
     pub fn get_function(&self, name: &str) -> Option<Function> {
-        for func in &self.functions {
-            if func.name == name {
-                return Some(func.clone());
-            }
-        }
-
-        None
+        if !self.has_function(name) { return None; }
+        Some(self.functions[name].clone())
     }
 }

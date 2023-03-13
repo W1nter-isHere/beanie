@@ -1,16 +1,13 @@
-extern crate pest;
-#[macro_use] extern crate pest_derive;
 #[macro_use] extern crate maplit;
 #[macro_use] extern crate lazy_static;
 
 mod data;
-mod interpreters;
+mod beanie_interpreter;
 mod utilities;
 
 use std::env;
 use std::sync::atomic::AtomicBool;
-use crate::data::expression::data_type::DataType;
-use crate::interpreters::{beanie_interpreter};
+use tree_sitter_beanie::data::expression::data_type::DataType;
 use crate::utilities::{file_utils, logger};
 
 lazy_static! {
@@ -59,10 +56,13 @@ fn main() {
         },
         None => args[2..].to_vec(),
     };
-    
-    beanie_interpreter::run(
-        file_path.clone(),
-        file_utils::read_file(file_path),
-        parameters
-    );
+
+    unsafe {
+        beanie_interpreter::run(
+            file_path.clone(),
+            file_utils::read_file(file_path),
+            parameters,
+            DEFAULT_DATA_TYPE.clone(),
+        );
+    }
 }

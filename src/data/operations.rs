@@ -1,19 +1,19 @@
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::thread::JoinHandle;
-use crate::data::contexts::stripped_beanie_context::StrippedBeanieContext;
+use tree_sitter_beanie::data::expression::expression_type::ExpressionType;
+use crate::data::context::BeanieRuntimeContext;
 use crate::data::expression::BeanieExpression;
-use crate::data::expression::expression_type::ExpressionType;
 use crate::utilities::logger;
 
-pub mod print_instruction;
-pub mod graph_instruction;
-pub mod use_instruction;
-pub mod in_instruction;
-pub mod out_instruction;
+pub mod print_operation;
+pub mod graph_operation;
+pub mod use_operation;
+pub mod in_operation;
+pub mod out_operation;
 
-pub trait Instruction: Debug {
-    fn execute(&self, context: &mut StrippedBeanieContext, parameters: &Vec<String>, threads_to_wait_for: &mut Vec<JoinHandle<()>>);
+pub trait Operation: Debug {
+    fn execute(&self, context: &mut BeanieRuntimeContext, parameters: &Vec<String>, threads_to_wait_for: &mut Vec<JoinHandle<()>>);
     fn add_argument(&mut self, name: String, expression: BeanieExpression);
 }
 

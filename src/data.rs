@@ -1,4 +1,4 @@
 pub mod expression;
-pub mod instructions;
+pub mod operations;
 pub mod function;
-pub mod contexts;
+pub mod context;

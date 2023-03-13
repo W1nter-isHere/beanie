@@ -5,42 +5,31 @@ use std::path::{Path, PathBuf};
 use std::sync::atomic::Ordering;
 use std::thread::JoinHandle;
 use colored::Colorize;
+use tree_sitter_beanie::data::instructions::out_operation_args::{OUT_TO_FILE, OUT_FILE, OUT_ARGUMENTS};
 use crate::data::expression::BeanieExpression;
-use crate::data::instructions;
-use crate::data::instructions::Instruction;
-use crate::utilities::keywords::booleans::TRUE;
+use crate::data::operations;
+use crate::data::operations::Operation;
 use crate::CLEANED_OUTPUT;
-use crate::data::contexts::stripped_beanie_context::StrippedBeanieContext;
-use crate::data::expression::expression_type::ExpressionType;
-
-const OUT_TO_FILE: &str = "output_to_file";
-const OUT_FILE: &str = "output_file";
-
-lazy_static! {
-    static ref OUT_ARGUMENTS: HashMap<String, ExpressionType> = hashmap!{
-        String::from(OUT_TO_FILE) => ExpressionType::Boolean,
-        String::from(OUT_FILE) => ExpressionType::FilePath,
-    };
-}
+use crate::data::context::BeanieRuntimeContext;
 
 #[derive(Debug, Clone)]
-pub struct OutInstruction {
+pub struct OutOperation {
     expression: BeanieExpression,
     arguments: HashMap<String, BeanieExpression>
 }
 
-impl OutInstruction {
-    pub fn new(expression: BeanieExpression) -> OutInstruction {
-        OutInstruction {
+impl OutOperation {
+    pub fn new(expression: BeanieExpression) -> OutOperation {
+        OutOperation {
             expression,
             arguments: HashMap::new(),
         }
     }
 }
 
-impl Instruction for OutInstruction {
-    fn execute(&self, context: &mut StrippedBeanieContext, _: &Vec<String>, threads_to_wait_for: &mut Vec<JoinHandle<()>>) {
-        if self.arguments.contains_key(OUT_TO_FILE) && self.arguments[OUT_TO_FILE].evaluate_to_string(context) == TRUE {
+impl Operation for OutOperation {
+    fn execute(&self, context: &mut BeanieRuntimeContext, _: &Vec<String>, _: &mut Vec<JoinHandle<()>>) {
+        if self.arguments.contains_key(OUT_TO_FILE) && self.arguments[OUT_TO_FILE].evaluate::<f64>(context).unwrap_single().round() as i32 == true as i32 {
             let file_path = match self.arguments.contains_key(OUT_FILE) {
                 true => self.arguments[OUT_FILE].evaluate_to_string(context),
                 false => {
@@ -78,6 +67,6 @@ impl Instruction for OutInstruction {
     }
 
     fn add_argument(&mut self, name: String, expression: BeanieExpression) {
-        instructions::verify_argument("Out", &name, &expression, &OUT_ARGUMENTS, &mut self.arguments);
+        operations::verify_argument("Out", &name, &expression, &OUT_ARGUMENTS, &mut self.arguments);
     }
 }

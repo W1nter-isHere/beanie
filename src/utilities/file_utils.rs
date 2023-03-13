@@ -1,5 +1,4 @@
 use std::fs;
-use rand::Rng;
 use crate::utilities::logger;
 
 pub fn read_file(file_path: &str) -> String {
@@ -10,22 +9,4 @@ pub fn read_file(file_path: &str) -> String {
             unreachable!()
         }
     }
-}
-
-pub fn random_suffix() -> String {
-    let mut result = String::new();
-    
-    for _ in 0..16 {
-        result.push(rand::thread_rng().gen_range(97..123) as u8 as char);
-    }
-
-    result
-}
-
-pub fn add_suffix(name: &str, suffix: &str) -> String {
-    if suffix.is_empty() {
-        return name.to_string();
-    }
-
-    String::from(name) + "_" + suffix
 }
