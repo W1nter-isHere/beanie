@@ -14,12 +14,12 @@ use crate::data::operations::print_operation::PrintOperation;
 use crate::data::operations::use_operation::UseOperation;
 use crate::utilities::logger;
 
-pub fn parse(bn_file_path: String, bn_file: String, default_data_type: DataType) -> (BeanieRuntimeContext, Vec<Box<dyn Operation>>) {
-    contextualize(bn_file_path, tree_sitter_beanie::parse(&bn_file, default_data_type, None).unwrap())
-}
-
 pub fn run(bn_file_path: String, bn_file: String, parameters: Vec<String>, default_data_type: DataType) {
     interpret(parse(bn_file_path, bn_file, default_data_type), parameters);
+}
+
+pub fn parse(bn_file_path: String, bn_file: String, default_data_type: DataType) -> (BeanieRuntimeContext, Vec<Box<dyn Operation>>) {
+    contextualize(bn_file_path, tree_sitter_beanie::parse(&bn_file, default_data_type, None).unwrap())
 }
 
 fn contextualize(bn_file_path: String, original: BeanieParsingContext) -> (BeanieRuntimeContext, Vec<Box<dyn Operation>>) {
