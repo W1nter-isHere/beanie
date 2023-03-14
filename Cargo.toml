@@ -14,5 +14,5 @@ rand = "0.8.5"
 rug = "1.19.1"
 pgfplots = { version = "0.5.1", features = ["tectonic"] }
 tectonic = { version = "0.12.0", features = ["native-tls-vendored"]}
-tree-sitter-beanie = { path = "tree-sitter-beanie" }
+tree-sitter-beanie = { path = "../tree-sitter-beanie" }
 regex = "1.7.1"
